@@ -12,8 +12,7 @@ Welcome to the Domain Reconnaissance Tool! This powerful Python script is design
 🛠️ Usage:
 
 1. Clone the repository.
-2. Install the required dependencies using `pip install -r requirements.txt`.
-3. Run the script with the target domain as an argument: `python recon_tool.py`.
+2. Run the script with the target domain as an argument: `python recon_tool.py (domain)`.
 
 👨‍💻 Contributions:
 
