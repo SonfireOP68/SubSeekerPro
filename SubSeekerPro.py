@@ -178,6 +178,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
     ## Check Python version
-    print(sys.version)
+    if not sys.version_info[0] > 3:
+        logging.error(f"{COLORS['error']}Python version is not compatible with this script.")
+        
     domain = sys.argv[1]
     main(domain)
