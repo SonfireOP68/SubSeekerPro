@@ -1,18 +1,18 @@
-import subprocess
-import sys
-import json
-import logging
+import subprocess, sys, json, logging, os
 from concurrent.futures import ThreadPoolExecutor
-from terminaltables import AsciiTable
-from colorama import Fore, Back, Style, init
-import builtwith
-import requests
-
-
-init(autoreset=True)
-
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+try:
+    from terminaltables import AsciiTable
+    from colorama import Fore, Back, Style, init
+    import builtwith
+    import requests
+except ModuleNotFoundError as e:
+    print("Installing Python Modules...", end="\n")
+    try:
+        os.system("pip install -r requirements.txt")
+    except:
+       print("Error! Try install manual dependencies using \n -> pip install -r requirements.txt")
+else:
+    init(autoreset=True)
 
 
 COLORS = {
@@ -25,6 +25,9 @@ COLORS = {
     'info': Fore.BLUE,
     'ssl': Fore.LIGHTWHITE_EX
 }
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 
 HEADER_ART = """
@@ -105,7 +108,8 @@ def find_tech_stack(domain):
     """Identify the technology stack of a given domain."""
     try:
         if not domain.startswith(('http://', 'https://')):
-            domain = 'http://' + domain
+            # HSTS option default is active
+            domain = 'https://' + domain
         return builtwith.parse(domain)
     except Exception as e:
         logging.error(f"{COLORS['error']}Error identifying technology stack: {e}")
@@ -153,8 +157,29 @@ def main(domain):
                 logging.error(f"{COLORS['error']}{subdomain} generated an exception: {exc}")
 
 if __name__ == "__main__":
+    nmap_check = True if os.path.exists('/usr/bin/nmap') else False
+    sublist3r_check = True if os.path.exists('/usr/bin/sublist3r') else False
+
+    ## Only verify in Linux OS
+    if not nmap_check or not sublist3r_check:
+        try:
+            if not nmap_check:
+                logging.info(f"{COLORS['info']} Installing nmap...")
+                os.system('sudo apt-get install nmap')
+            if not sublist3r_check:
+                logging.info(f"{COLORS['info']} Installing sublist3r...")
+                # Problaly don't work in linux distros, only works in Kali
+                os.system('sudo apt-get install sublist3r')
+        except:
+            logging.error(f"{COLORS['error']}Depedence: any depedences not found in system and cannot install")
+
     if len(sys.argv) != 2:
         logging.error(f"{COLORS['error']}Usage: python {sys.argv[0]} <domain>")
         sys.exit(1)
+
+    ## Check Python version
+    if not sys.version_info[0] > 3:
+        logging.error(f"{COLORS['error']}Python version is not compatible with this script.")
+        
     domain = sys.argv[1]
     main(domain)
